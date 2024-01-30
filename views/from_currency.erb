@@ -1,0 +1,24 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Target: Exchange Rates</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+  </head>
+
+  <body>
+    <h1>Convert <%=@original_currency%></h1>
+
+<p>Go <a href="/">back</a>.</p>
+
+<!--Parse symbols-->
+<ul>
+  <%@lst_symbols.each do |symbol|%>
+  <a href="/<%=@original_currency%>/<%=symbol%>">
+    <li>Convert 1 <%=@original_currency%> to <%=symbol%>... </li>
+  <%end%>
+</ul>
+
+  </body>
+</html>

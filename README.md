@@ -2,6 +2,8 @@
 
 [Notes for this project are here.](https://learn.firstdraft.com/lessons/101)
 
+Link to the target: https://exchange-rates.matchthetarget.com/
+
 Activities:
 
 1. Initially, set the app.rb main route to the following to display the url:
@@ -79,3 +81,92 @@ Here is the contents of the JSON file.
 - APIs (including the <a href="https://learn.firstdraft.com/lessons/104-umbrella">Umbrella project</a>),
 
 - and <a href="https://learn.firstdraft.com/lessons/104-umbrella#useful-methods">JSON parsing</a> 
+
+6. To create a dynamic page for the route, use the syntax ```get("/:variable_path")```, as follows. The variable path can then be passed to customize the contents of the page within the erb file that is called in ```erb(:page)```.
+
+```
+get("/:from_currency") do
+  #extract from_currency from dynamic path
+  @original_currency = params.fetch("from_currency")
+
+  api_url = "http://api.exchangerate.host/list?access_key=#{ENV["EXCHANGE_RATES_KEY"]}"
+  
+  # some more code to parse the URL and render a view template
+  erb(:from_currency)
+end
+
+get("/:from_currency/:to_currency") do
+  #extract from_currency and to_currency from dynamic path
+  @original_currency = params.fetch("from_currency")
+  @destination_currency = params.fetch("to_currency")
+
+  api_url = "http://api.exchangerate.host/convert?access_key=#{ENV["EXCHANGE_RATES_KEY"]}&from=#{@original_currency}&to=#{@destination_currency}&amount=1"
+  
+  # some more code to parse the URL and render a view template
+  erb(:to_currency)
+end
+```
+
+7. Create a reusable function to retrieve the list of currency symbols within the app.rb.
+
+```
+def get_symbols
+  """Get the list of all currency symbols
+  """
+
+  # build the API url, including the API key in the query string
+  api_url = "http://api.exchangerate.host/list?access_key=#{ENV["EXCHANGE_RATES_KEY"]}"
+
+  # use HTTP.get to retrieve the API information
+  raw_data = HTTP.get(api_url)
+
+  # convert the raw request to a string
+  raw_data_string = raw_data.to_s
+
+  # convert the string to JSON
+  parsed_data = JSON.parse(raw_data_string)
+
+  # get the list of symbols from the JSON
+  lst_symbols = parsed_data["currencies"].keys()
+
+  return lst_symbols
+end
+```
+
+8. Use a do loop to list the currency symbol links within from_currency.erb, as follows:
+
+```
+<!--Parse symbols-->
+<ul>
+  <%@lst_symbols.each do |symbol|%>
+  <a href="/<%=@original_currency%>/<%=symbol%>">
+    <li>Convert 1 <%=@original_currency%> to <%=symbol%>... </li>
+  <%end%>
+</ul>
+```
+9. Create a function to retrieve currency conversion within the app.rb, as follows. Note the syntax for extracting and parsing the api information from a url to a json file.
+
+```
+def get_conversion(original_currency, destination_currency)
+  """Get currency conversion
+  """
+
+  api_url = "http://api.exchangerate.host/convert?access_key=#{ENV["EXCHANGE_RATES_KEY"]}&from=#{original_currency}&to=#{destination_currency}&amount=1"
+  
+  # parse the URL: 
+  # use HTTP.get to retrieve the API information
+  raw_data = HTTP.get(api_url)
+
+  # convert the raw request to a string
+  raw_data_string = raw_data.to_s
+
+  # convert the string to JSON
+  parsed_data = JSON.parse(raw_data_string)
+
+  conversion = parsed_data["result"]
+
+  return conversion
+
+end
+```
+***
